@@ -12,25 +12,8 @@ from pymodaq_gui.parameter import Parameter
 
 from pyqtgraph.parametertree.Parameter import PARAM_TYPES, PARAM_NAMES
 
-from pymodaq_gui.parameter.xml_parameter_factory import XMLParameterFactory
+from pymodaq_gui.parameter.xml_parameter_factory import XMLParameterFactory,XMLParameter
 
-def add_text_to_elt(elt, param):
-    """Add a text filed in a xml element corresponding to the parameter value
-
-    Parameters
-    ----------
-    elt: XML elt
-    param: Parameter
-
-    See Also
-    --------
-    add_text_to_elt, walk_parameters_to_xml, dict_from_param
-    """
-
-    param_type = str(param.type())
-    adder = XMLParameterFactory.get_parameter_class(param_type)
-    text = adder.get_text(param, elt)
-    elt.text = text
 
 def dict_from_param(param):
     """Get Parameter properties as a dictionary
@@ -77,7 +60,14 @@ def elt_to_dict(el):
     
     return param_instance.XMLParameter.xml_elt_to_dict(el)
 
-
+def set_dict_from_el(el):
+    """Convert an element into a dict
+    ----------
+    el: xml element
+    param_dict: dictionnary from which the parameter will be constructed
+    """
+    param_dict = elt_to_dict(el)
+    return param_dict 
 
 def parameter_to_xml_string(param):
     """ Convert  a Parameter to a XML string.
@@ -107,6 +97,35 @@ def parameter_to_xml_string(param):
     xml_elt = XMLParameterFactory.xml_string_to_dict(param=param)
     return ET.tostring(xml_elt)
 
+
+def XML_string_to_parameter(xml_string):
+    """
+        Convert a xml string into a list of dict for initialize pyqtgraph parameter object.
+
+        =============== =========== ================================
+        **Parameters**   **Type**    **Description**
+
+        xml_string       string      the xml string to be converted
+        =============== =========== ================================
+
+        Returns
+        -------
+        params: a parameter list of dict to init a parameter
+
+        See Also
+        --------
+        walk_parameters_to_xml
+
+        Examples
+        --------
+    """
+    root = ET.fromstring(xml_string)
+    tree = ET.ElementTree(root)
+
+    # tree.write('test.xml')
+    params = XMLParameterFactory.xml_string_to_dict(params=[], XML_elt=root)
+
+    return params
 
 
 def elt_to_dict_test():

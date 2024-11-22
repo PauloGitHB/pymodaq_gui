@@ -1,7 +1,7 @@
 from abc import ABCMeta, abstractmethod
 from typing import Callable
 from xml.etree import ElementTree as ET
-from parameter.ioxml import set_dict_from_el
+from parameter.ioxml import elt_to_dict
 from pyqtgraph.parametertree.Parameter import PARAM_TYPES, PARAM_NAMES, Parameter
 
 class XMLParameter(metaclass=ABCMeta):
@@ -69,11 +69,11 @@ class XMLParameterFactory:
                 raise TypeError('not valid XML element')
 
             if len(XML_elt) == 0:
-                param_dict = set_dict_from_el(XML_elt)
+                param_dict = elt_to_dict(XML_elt)
                 params.append(param_dict)
 
             for el in XML_elt:
-                param_dict = set_dict_from_el(el)
+                param_dict = elt_to_dict(el)
                 if param_dict['type'] not in PARAM_TYPES:
                     param_dict['type'] = 'group'  # in case the custom group has been defined somewhere but not
                     # registered again in this session

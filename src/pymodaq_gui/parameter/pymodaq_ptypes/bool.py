@@ -40,7 +40,6 @@ class BoolXMLParameter(XMLParameter):
     def set_specific_options(self, el, param_dict):
         param_dict['value'] = True if el.text == '1' else False
         param_dict['show_pb'] = True if el.get('show_pb', '0') == '1' else False
-       #value 
         
     def get_options(self, param):
         opts = {
