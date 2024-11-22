@@ -13,12 +13,12 @@ class XMLParameter(metaclass=ABCMeta):
 
     @staticmethod
     def set_group_options(el:ET.Element):
-        basic_options = {
+        group_options = {
             "name": el.tag,
             "type": el.get('type'),
             "title": el.get('title', el.tag),
         }
-        return basic_options
+        return group_options
     
     @staticmethod
     def set_basic_options(el:ET.Element):
@@ -100,3 +100,48 @@ class XMLParameterFactory:
         except Exception as e:  # Handle exceptions for debugging
             raise e
         return params
+    
+    @staticmethod
+    def parameter_to_xml_string(param:Parameter):
+        from pymodaq_gui.parameter.ioxml_factory import dict_from_param
+        """ Convert  a Parameter to a XML string.
+
+        Parameters
+        ----------
+        param: Parameter
+
+        Returns
+        -------
+        str: XMl string
+
+        See Also
+        --------
+        add_text_to_elt, walk_parameters_to_xml, dict_from_param
+
+        Examples
+        --------
+        >>> from pyqtgraph.parametertree import Parameter
+        >>>    #Create an instance of Parameter
+        >>> settings=Parameter(name='settings')
+        >>> converted_xml=parameter_to_xml_string(settings)
+        >>>    # The converted Parameter
+        >>> print(converted_xml)
+        b'<settings title="settings" type="None" />'
+        """
+        if type(param) is None:
+            raise TypeError('No valid param input')
+
+        if parent_elt is None:
+            opts = dict_from_param(param)
+            parent_elt = ET.Element(param.name(), **opts)
+
+        params_list = param.children()
+        for param in params_list:
+            opts = dict_from_param(param)
+            elt = ET.Element(param.name(), **opts)
+            if param.hasChildren():
+                XMLParameterFactory.parameter_to_xml_string(elt, param)
+
+            parent_elt.append(elt)
+
+        return ET.tostring(parent_elt)

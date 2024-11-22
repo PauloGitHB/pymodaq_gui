@@ -33,7 +33,7 @@ class TestBoolXMLParameter(unittest.TestCase):
             'show_pb': True,
         }
 
-        print(param_dict)
+        #print(param_dict)
 
         self.assertDictEqual(param_dict, expected_dict)
     
@@ -85,16 +85,78 @@ class TestBoolXMLParameter(unittest.TestCase):
         self.assertListEqual(param_list, expected_list)
 
 
-    # def test_dict_to_xml(self):
-    #     # Create a sample parameter dictionary
-    #     param_dict = {
-    #         'name': 'parameter',
-    #         'type': 'bool',
-    #         'title': 'Test Boolean Parameter',
-    #         'visible': True,
-    #         'removable': False,
-    #         'readonly': True,
-    #         'tip': False,  # Default value
-    #         'value': True,
-    #         'show_pb': True,
-    #     }
+    def test_dict_to_xml(self):
+        # Sample dictionary for a boolean parameter
+        param_dict = {
+            'name': 'parameter',
+            'type': 'bool',
+            'title': 'Test Boolean Parameter',
+            'visible': True,
+            'removable': False,
+            'readonly': True,
+            'tip': False,
+            'value': True,
+            'show_pb': True,
+        }
+
+        # Convert the dictionary to an XML element
+        el = Element('parameter')
+        el.set('type', param_dict['type'])
+        el.set('title', param_dict['title'])
+        el.set('visible', '1' if param_dict['visible'] else '0')
+        el.set('removable', '1' if param_dict['removable'] else '0')
+        el.set('readonly', '1' if param_dict['readonly'] else '0')
+        el.set('show_pb', '1' if param_dict['show_pb'] else '0')
+        el.text = '1' if param_dict['value'] else '0'
+
+        # Expected XML string
+        expected_xml = (
+            b'<parameter type="bool" title="Test Boolean Parameter" '
+            b'visible="1" removable="0" readonly="1" show_pb="1">1</parameter>'
+        )
+
+        #print(tostring(el))
+        # Assert the XML element string matches the expected output
+        self.assertEqual(tostring(el), expected_xml)
+
+    def test_dict_to_xml_with_children(self):
+        # Sample dictionary with children
+        param_dict = {
+            'name': 'parameter',
+            'type': 'group',
+            'title': 'Parent Parameter',
+            'children': [
+                {
+                    'name': 'parameter',
+                    'type': 'bool',
+                    'title': 'Child Boolean 1',
+                    'value': True,
+                    'show_pb': True,
+                },
+                {
+                    'name': 'parameter',
+                    'type': 'bool',
+                    'title': 'Child Boolean 2',
+                    'value': False,
+                    'show_pb': False,
+                },
+            ],
+        }
+
+       
+        # Convert the dictionary to XML
+        xml_element = XMLParameterFactory.parameter_to_xml_string(param_dict)
+
+        # Expected XML string
+        expected_xml = (
+            b'<parameter type="group" title="Parent Parameter">'
+            b'<parameter type="bool" title="Child Boolean 1" show_pb="1">1</parameter>'
+            b'<parameter type="bool" title="Child Boolean 2" show_pb="0">0</parameter>'
+            b'</parameter>'
+        )
+
+        # Assert the XML element string matches the expected output
+        self.assertEqual(tostring(xml_element), expected_xml)
+
+
+

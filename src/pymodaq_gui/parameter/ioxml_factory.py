@@ -69,33 +69,33 @@ def set_dict_from_el(el):
     param_dict = XMLParameter.xml_elt_to_dict(el)
     return param_dict 
 
-def parameter_to_xml_string(param):
-    """ Convert  a Parameter to a XML string.
+# def parameter_to_xml_string(parent_elt=None, param=None):
+#     """ Convert  a Parameter to a XML string.
 
-    Parameters
-    ----------
-    param: Parameter
+#     Parameters
+#     ----------
+#     param: Parameter
 
-    Returns
-    -------
-    str: XMl string
+#     Returns
+#     -------
+#     str: XMl string
 
-    See Also
-    --------
-    add_text_to_elt, walk_parameters_to_xml, dict_from_param
+#     See Also
+#     --------
+#     add_text_to_elt, walk_parameters_to_xml, dict_from_param
 
-    Examples
-    --------
-    >>> from pyqtgraph.parametertree import Parameter
-    >>>    #Create an instance of Parameter
-    >>> settings=Parameter(name='settings')
-    >>> converted_xml=parameter_to_xml_string(settings)
-    >>>    # The converted Parameter
-    >>> print(converted_xml)
-    b'<settings title="settings" type="None" />'
-    """
-    xml_elt = XMLParameterFactory.xml_string_to_dict(param=param)
-    return ET.tostring(xml_elt)
+#     Examples
+#     --------
+#     >>> from pyqtgraph.parametertree import Parameter
+#     >>>    #Create an instance of Parameter
+#     >>> settings=Parameter(name='settings')
+#     >>> converted_xml=parameter_to_xml_string(settings)
+#     >>>    # The converted Parameter
+#     >>> print(converted_xml)
+#     b'<settings title="settings" type="None" />'
+#     """
+#     xml_elt = XMLParameterFactory.parameter_to_xml_string(parent_elt, param)
+#     return xml_elt
 
 
 def XML_string_to_parameter(xml_string):
