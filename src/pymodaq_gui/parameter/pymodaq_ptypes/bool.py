@@ -1,6 +1,6 @@
 from qtpy import QtWidgets
 from pyqtgraph.parametertree.parameterTypes.basetypes import WidgetParameterItem, SimpleParameter
-from xml_parameter_factory import XMLParameter, XMLParameterFactory
+from pymodaq_gui.parameter.xml_parameter_factory import XMLParameter, XMLParameterFactory
 
 
 class BoolPushParameterItem(WidgetParameterItem):

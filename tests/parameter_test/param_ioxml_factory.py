@@ -33,6 +33,8 @@ class TestBoolXMLParameter(unittest.TestCase):
             'show_pb': True,
         }
 
+        print(param_dict)
+
         self.assertDictEqual(param_dict, expected_dict)
     
     def test_xml_with_children_to_dict(self):
@@ -79,6 +81,7 @@ class TestBoolXMLParameter(unittest.TestCase):
             }
         ]
 
+        #print(param_list)
         self.assertListEqual(param_list, expected_list)
 
 

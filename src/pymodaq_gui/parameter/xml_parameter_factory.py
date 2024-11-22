@@ -1,7 +1,6 @@
 from abc import ABCMeta, abstractmethod
 from typing import Callable
 from xml.etree import ElementTree as ET
-from parameter.ioxml import elt_to_dict
 from pyqtgraph.parametertree.Parameter import PARAM_TYPES, PARAM_NAMES, Parameter
 
 class XMLParameter(metaclass=ABCMeta):
@@ -12,7 +11,16 @@ class XMLParameter(metaclass=ABCMeta):
     def PARAMETER_TYPE(cls):
         raise NotImplementedError
 
-    @abstractmethod
+    @staticmethod
+    def set_group_options(el:ET.Element):
+        basic_options = {
+            "name": el.tag,
+            "type": el.get('type'),
+            "title": el.get('title', el.tag),
+        }
+        return basic_options
+    
+    @staticmethod
     def set_basic_options(el:ET.Element):
         basic_options = {
             "name": el.tag,
@@ -29,11 +37,19 @@ class XMLParameter(metaclass=ABCMeta):
     def set_specific_options(self, el:ET.Element, param_dict:dict):
         pass
 
-    @abstractmethod
-    def xml_elt_to_dict(el:ET.Element):
-        dic = XMLParameter.set_basic_options(el)
-        dic = XMLParameter.set_specific_options(el, dic)
+    @staticmethod
+    def xml_elt_to_dict(el: ET.Element):
+        """Convert XML element to a dictionary."""
+        param_type = el.get('type')
+        param_instance = XMLParameterFactory.get_parameter_class(param_type)
+        if param_instance is not None:
+            dic = XMLParameter.set_basic_options(el)
+        
+            param_instance.set_specific_options(el, dic)
+        else:
+            dic = XMLParameter.set_group_options(el)
         return dic
+
 
     @abstractmethod
     def get_options(self,param:Parameter):
@@ -58,6 +74,8 @@ class XMLParameterFactory:
     def get_parameter_class(cls, param_type: str):
 
         if param_type not in cls.text_adders_registry:
+            if param_type == 'group':
+                return None
             raise ValueError(f"{param_type} is not a supported parameter type.")
         
         return cls.text_adders_registry[param_type]()
@@ -68,23 +86,17 @@ class XMLParameterFactory:
             if type(XML_elt) is not ET.Element:
                 raise TypeError('not valid XML element')
 
-            if len(XML_elt) == 0:
-                param_dict = elt_to_dict(XML_elt)
-                params.append(param_dict)
+            param_dict = XMLParameter.xml_elt_to_dict(XML_elt)
 
-            for el in XML_elt:
-                param_dict = elt_to_dict(el)
-                if param_dict['type'] not in PARAM_TYPES:
-                    param_dict['type'] = 'group'  # in case the custom group has been defined somewhere but not
-                    # registered again in this session
-                if len(el) == 0:
-                    children = []
-                else:
-                    subparams = []
-                    children = XMLParameterFactory.xml_string_to_dict(subparams, el)
-                param_dict['children'] = children
-                params.append(param_dict)
+            if param_dict['type'] == 'group':
+                param_dict['children'] = []
+                for child in XML_elt:
+                    child_params = []
+                    children = XMLParameterFactory.xml_string_to_dict(child_params, child)
+                    param_dict['children'].extend(children)
 
-        except Exception as e:  # to be able to debug when there's an issue
+            params.append(param_dict)
+
+        except Exception as e:  # Handle exceptions for debugging
             raise e
         return params

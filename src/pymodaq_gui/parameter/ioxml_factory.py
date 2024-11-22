@@ -42,23 +42,23 @@ def dict_from_param(param):
     return opts
 
 
-def elt_to_dict(el):
-    """Convert xml element attributes to a dictionnary
+# def elt_to_dict(el):
+#     """Convert xml element attributes to a dictionnary
 
-    Parameters
-    ----------
-    el
+#     Parameters
+#     ----------
+#     el
 
-    Returns
-    -------
+#     Returns
+#     -------
 
-    """
+#     """
 
-    param_type = el.get('type')
+#     param_type = el.get('type')
     
-    param_instance = XMLParameterFactory.get_parameter_class(param_type)
+#     param_instance = XMLParameterFactory.get_parameter_class(param_type)
     
-    return param_instance.XMLParameter.xml_elt_to_dict(el)
+#     return param_instance.xml_elt_to_dict(el)
 
 def set_dict_from_el(el):
     """Convert an element into a dict
@@ -66,7 +66,7 @@ def set_dict_from_el(el):
     el: xml element
     param_dict: dictionnary from which the parameter will be constructed
     """
-    param_dict = elt_to_dict(el)
+    param_dict = XMLParameter.xml_elt_to_dict(el)
     return param_dict 
 
 def parameter_to_xml_string(param):
@@ -126,44 +126,3 @@ def XML_string_to_parameter(xml_string):
     params = XMLParameterFactory.xml_string_to_dict(params=[], XML_elt=root)
 
     return params
-
-
-def elt_to_dict_test():
-    el = ET.Element('parameter')
-
-    el = ET.Element('parameter')
-    el.set('type', 'bool')
-    el.set('title', 'My Boolean Parameter')
-    el.set('visible', '1')
-    el.set('removable', '0')
-    el.set('readonly', '1')
-    el.set('show_pb', '1')
-
-    param_dict = elt_to_dict(el)
-    print("Parameter dictionary:", param_dict)
-
-def dict_from_param_test():
-
-    param = Parameter.create(
-        name='test_param',
-        type='bool',
-        value=True,
-        title='Test Parameter',
-        visible=True,
-        removable=False,
-        readonly=False,
-        show_pb=True,
-    )
-
-    opts = dict_from_param(param)
-    
-    print("Extracted Parameter Options:")
-    for key, value in opts.items():
-        print(f"{key}: {value}")
-
-def main():
-    elt_to_dict_test()
-    dict_from_param_test()
-
-if __name__ == '__main__':
-    main()
