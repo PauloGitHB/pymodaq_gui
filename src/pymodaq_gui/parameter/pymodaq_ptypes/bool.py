@@ -38,10 +38,10 @@ class BoolXMLParameter(XMLParameter):
     PARAMETER_TYPE = 'bool'
 
     def set_specific_options(self, el, param_dict):
-        param_dict['value'] = True if el.text == '1' else False
         param_dict['show_pb'] = True if el.get('show_pb', '0') == '1' else False
+        param_dict['value'] = True if el.text == '1' else False
         
-    def get_options(self, param):
+    def get_type_options(self, param):
         opts = {
             "type": self.PARAMETER_TYPE,
             "title": param.opts.get("title", param.name())
@@ -51,9 +51,11 @@ class BoolXMLParameter(XMLParameter):
             "visible": param.opts.get("visible", True),
             "removable": param.opts.get("removable", False),
             "readonly": param.opts.get("readonly", False),
-            "show_pb": param.opts.get("show_pb", False)
+            "show_pb": param.opts.get("show_pb", False),
+            "value":    param.opts.get("value", False),
         }
-        opts.update({key: '1' for key, value in boolean_opts.items() if value})
+        
+        opts.update({key: '1' if value else '0' for key, value in boolean_opts.items()})
 
         for key in ["limits", "addList", "addText", "detlist", "movelist", "filetype"]:
             if key in param.opts:

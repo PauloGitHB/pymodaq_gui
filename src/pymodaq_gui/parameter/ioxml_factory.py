@@ -35,9 +35,11 @@ def dict_from_param(param):
     
     param_class = XMLParameterFactory.get_parameter_class(param_type)
 
-    opts = param_class.get_options(param)
-
-    opts['type'] = param_type
+    if(param_class):
+        opts = param_class.get_options(param)
+    else:
+        opts = XMLParameter.get_group_options(param)
+        opts['type'] = param_type 
     
     return opts
 
@@ -98,6 +100,34 @@ def set_dict_from_el(el):
 #     return xml_elt
 
 
+def parameter_to_xml_string(param):
+    """ Convert  a Parameter to a XML string.
+
+    Parameters
+    ----------
+    param: Parameter
+
+    Returns
+    -------
+    str: XMl string
+
+    See Also
+    --------
+    add_text_to_elt, walk_parameters_to_xml, dict_from_param
+
+    Examples
+    --------
+    >>> from pyqtgraph.parametertree import Parameter
+    >>>    #Create an instance of Parameter
+    >>> settings=Parameter(name='settings')
+    >>> converted_xml=parameter_to_xml_string(settings)
+    >>>    # The converted Parameter
+    >>> print(converted_xml)
+    b'<settings title="settings" type="None" />'
+    """
+    xml_elt = XMLParameterFactory.parameter_to_xml_string_factory(param=param)
+    return ET.tostring(xml_elt)
+
 def XML_string_to_parameter(xml_string):
     """
         Convert a xml string into a list of dict for initialize pyqtgraph parameter object.
@@ -123,6 +153,6 @@ def XML_string_to_parameter(xml_string):
     tree = ET.ElementTree(root)
 
     # tree.write('test.xml')
-    params = XMLParameterFactory.xml_string_to_dict(params=[], XML_elt=root)
+    params = XMLParameterFactory.xml_string_to_parameter_factory(XML_elt=root,params=[])
 
     return params

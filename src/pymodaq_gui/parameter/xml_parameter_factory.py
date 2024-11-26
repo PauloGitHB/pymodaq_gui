@@ -50,10 +50,52 @@ class XMLParameter(metaclass=ABCMeta):
             dic = XMLParameter.set_group_options(el)
         return dic
 
+    @staticmethod
+    def get_group_options(param:Parameter):
+        opts = dict([])
+        param_type = str(param.type())
+        opts.update(dict(type=param_type))
+        title = param.opts['title']
+        if title is None:
+            title = param.name()
+        opts.update(dict(title=title))
+
+        boolean_opts = {
+            "visible": param.opts.get("visible", True),
+            "removable": param.opts.get("removable", False),
+            "readonly": param.opts.get("readonly", False),
+        }
+
+        opts.update({key: '1' if value else '0' for key, value in boolean_opts.items()})
+
+        for key in ["limits", "addList", "addText", "detlist", "movelist", "filetype"]:
+            if key in param.opts:
+                opts[key] = str(param.opts[key])
+
+
+        return opts
 
     @abstractmethod
-    def get_options(self,param:Parameter):
+    def get_type_options(self,param:Parameter):
         pass
+
+    @staticmethod
+    def get_options(param:Parameter):
+        param_type = str(param.type())
+    
+        param_class = XMLParameterFactory.get_parameter_class(param_type)
+
+        if(param_class):
+            opts = param_class.get_type_options(param)
+        else:
+            opts = XMLParameter.get_group_options(param)
+            opts['type'] = param_type 
+        
+        return opts
+
+
+
+
 
 class XMLParameterFactory:
 
@@ -81,7 +123,7 @@ class XMLParameterFactory:
         return cls.text_adders_registry[param_type]()
     
     @staticmethod
-    def xml_string_to_dict(params=[], XML_elt=None):
+    def xml_string_to_parameter_factory(params=[], XML_elt=None):
         try:
             if type(XML_elt) is not ET.Element:
                 raise TypeError('not valid XML element')
@@ -92,7 +134,7 @@ class XMLParameterFactory:
                 param_dict['children'] = []
                 for child in XML_elt:
                     child_params = []
-                    children = XMLParameterFactory.xml_string_to_dict(child_params, child)
+                    children = XMLParameterFactory.xml_string_to_parameter_factory(child_params, child)
                     param_dict['children'].extend(children)
 
             params.append(param_dict)
@@ -102,46 +144,46 @@ class XMLParameterFactory:
         return params
     
     @staticmethod
-    def parameter_to_xml_string(param:Parameter):
+    def parameter_to_xml_string_factory(parent_elt = None, param = None):
         from pymodaq_gui.parameter.ioxml_factory import dict_from_param
-        """ Convert  a Parameter to a XML string.
+        """
+        To convert a parameter object (and children) to xml data tree.
 
-        Parameters
-        ----------
-        param: Parameter
+        =============== ================================ ==================================
+        **Parameters**   **Type**                         **Description**
+
+        *parent_elt*     XML element                      the root element
+        *param*          instance of pyqtgraph parameter  Parameter object to be converted
+        =============== ================================ ==================================
 
         Returns
         -------
-        str: XMl string
+        XML element : parent_elt
+            XML element with subelements from Parameter object
 
         See Also
         --------
         add_text_to_elt, walk_parameters_to_xml, dict_from_param
 
-        Examples
-        --------
-        >>> from pyqtgraph.parametertree import Parameter
-        >>>    #Create an instance of Parameter
-        >>> settings=Parameter(name='settings')
-        >>> converted_xml=parameter_to_xml_string(settings)
-        >>>    # The converted Parameter
-        >>> print(converted_xml)
-        b'<settings title="settings" type="None" />'
         """
         if type(param) is None:
             raise TypeError('No valid param input')
 
         if parent_elt is None:
-            opts = dict_from_param(param)
+            opts = XMLParameter.get_options(param)
             parent_elt = ET.Element(param.name(), **opts)
 
         params_list = param.children()
         for param in params_list:
-            opts = dict_from_param(param)
+            opts = XMLParameter.get_options(param)
             elt = ET.Element(param.name(), **opts)
+
+            # if elt.text is None:
+            #     elt.text = '1'
+
             if param.hasChildren():
-                XMLParameterFactory.parameter_to_xml_string(elt, param)
+                XMLParameterFactory.parameter_to_xml_string_factory(elt, param)
 
             parent_elt.append(elt)
 
-        return ET.tostring(parent_elt)
+        return parent_elt
