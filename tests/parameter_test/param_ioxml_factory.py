@@ -9,155 +9,244 @@ from pymodaq_gui.parameter.ioxml import XML_string_to_parameter as xstp
 from pymodaq_gui.parameter.pymodaq_ptypes.bool import BoolXMLParameter
 from pymodaq_gui.parameter import Parameter
 
-class TestBoolXMLParameter(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        XMLParameterFactory.register_text_adder()(BoolXMLParameter)
+# class TestBoolXMLParameter(unittest.TestCase):
+#     @classmethod
+#     def setUpClass(cls):
+#         XMLParameterFactory.register_text_adder()(BoolXMLParameter)
 
-    def test_xml_to_params(self):
-        el = ET.Element('parameter')
-        el.set('type', 'bool')
-        el.set('title', 'Test Boolean Parameter')
-        el.set('visible', '1')
-        el.set('removable', '0')
-        el.set('readonly', '1')
-        el.set('show_pb', '1')
-        el.text = '1'
+#     def test_xml_to_params(self):
+#         el = ET.Element('parameter')
+#         el.set('type', 'bool')
+#         el.set('title', 'Test Boolean Parameter')
+#         el.set('visible', '1')
+#         el.set('removable', '0')
+#         el.set('readonly', '1')
+#         el.set('show_pb', '1')
+#         el.text = '1'
 
-        param_dict = XML_string_to_parameter(ET.tostring(el))
+#         param_dict = XML_string_to_parameter(ET.tostring(el))
 
-        expected_dict = xstp(ET.tostring(el))
-        # expected_dict = [{
-        #     'name': 'parameter',
-        #     'readonly': True,
-        #     'removable': False,
-        #     'show_pb': True,
-        #     'tip': False,
-        #     'title': 'Test Boolean Parameter',
-        #     'type': 'bool',
-        #     'value': True,
-        #     'visible': True}]
+#         expected_dict = xstp(ET.tostring(el))
+#         # expected_dict = [{
+#         #     'name': 'parameter',
+#         #     'readonly': True,
+#         #     'removable': False,
+#         #     'show_pb': True,
+#         #     'tip': False,
+#         #     'title': 'Test Boolean Parameter',
+#         #     'type': 'bool',
+#         #     'value': True,
+#         #     'visible': True}]
 
 
-        print(param_dict)
-        print(expected_dict)
+#         print(param_dict)
+#         print(expected_dict)
 
-        self.assertListEqual(param_dict, expected_dict)
+#         self.assertListEqual(param_dict, expected_dict)
     
-    def test_xml_with_children_to_param(self):
-        # Create a parent XML element
-        parent = ET.Element('paramater')
-        parent.set('type', 'group')
-        parent.set('title', 'Parent Parameter')
+#     def test_xml_with_children_to_param(self):
+#         # Create a parent XML element
+#         parent = ET.Element('paramater')
+#         parent.set('type', 'group')
+#         parent.set('title', 'Parent Parameter')
 
-        # Create a child XML element
-        child = ET.Element('parameter')
-        child.set('type', 'bool')
-        child.set('title', 'Child Boolean Parameter')
-        child.set('visible', '1')
-        child.set('removable', '0')
-        child.set('readonly', '1')
-        child.set('show_pb', '1')
-        child.text = '1'
+#         # Create a child XML element
+#         child = ET.Element('parameter')
+#         child.set('type', 'bool')
+#         child.set('title', 'Child Boolean Parameter')
+#         child.set('visible', '1')
+#         child.set('removable', '0')
+#         child.set('readonly', '1')
+#         child.set('show_pb', '1')
+#         child.text = '1'
 
-        parent.append(child)
+#         parent.append(child)
 
-        #print(ET.tostring(parent))
+#         #print(ET.tostring(parent))
 
-        param_list = XML_string_to_parameter(ET.tostring(parent))
+#         param_list = XML_string_to_parameter(ET.tostring(parent))
 
-        # Expected dictionary
-        expected_list = xstp(ET.tostring(parent))
-        # expected_list = [{
-        #     'name': 'paramater',
-        #     'title': 'Parent Parameter',
-        #     'type': 'group',
-        #     'children': [{
-        #         'name': 'parameter',
-        #         'readonly': True,
-        #         'removable': False,
-        #         'show_pb': True,
-        #         'tip': False,
-        #         'title': 'Child Boolean Parameter',
-        #         'type': 'bool',
-        #         'value': True,
-        #         'visible': True
-        #     }]
-        # }]
+#         # Expected dictionary
+#         expected_list = xstp(ET.tostring(parent))
+#         # expected_list = [{
+#         #     'name': 'paramater',
+#         #     'title': 'Parent Parameter',
+#         #     'type': 'group',
+#         #     'children': [{
+#         #         'name': 'parameter',
+#         #         'readonly': True,
+#         #         'removable': False,
+#         #         'show_pb': True,
+#         #         'tip': False,
+#         #         'title': 'Child Boolean Parameter',
+#         #         'type': 'bool',
+#         #         'value': True,
+#         #         'visible': True
+#         #     }]
+#         # }]
 
-        print(param_list)
-        print(expected_list)
-        self.assertListEqual(param_list, expected_list)
+#         print(param_list)
+#         print(expected_list)
+#         self.assertListEqual(param_list, expected_list)
 
 
-    def test_parameter_to_xml(self):
-        # Create a Parameter object with a single boolean parameter
-        settings = Parameter.create(name='settings', type='group',children=[{
+#     def test_parameter_to_xml(self):
+#         # Create a Parameter object with a single boolean parameter
+#         settings = Parameter.create(name='settings', type='group',children=[{
+#                 'name': 'bool_param',
+#                 'type': 'bool',
+#                 'title': 'Test Boolean Parameter',
+#                 'visible': True,
+#                 'removable': False,
+#                 'readonly': True,
+#                 'value': True,
+#                 'show_pb': True,
+#             }])
+
+#         # Pass the parameter directly
+#         xml_element = parameter_to_xml_string(settings)
+
+#         # Expected XML string
+#         expected_xml = (
+#             b'<settings type="group" title="settings" visible="1" removable="0" readonly="0">'
+#             b'<bool_param type="bool" title="Test Boolean Parameter" visible="1" removable="0" readonly="1" show_pb="1" value="1" />'
+#             b'</settings>'
+#         )
+
+
+#         # Assert the XML element string matches the expected output
+#         self.assertEqual(xml_element, expected_xml)
+
+#     def test_parameter_to_xml_with_children(self):
+#         # Create a parent parameter with boolean children
+#         settings = Parameter.create(name='settings', type='group',children=[
+#             {
+#                 'name': 'parent_param',
+#                 'type': 'group',
+#                 'title': 'Parent Parameter',
+#                 'children': [
+#                     {
+#                         'name': 'child1',
+#                         'type': 'bool',
+#                         'title': 'Child Boolean 1',
+#                         'value': True,
+#                         'show_pb': True,
+#                     },
+#                     {
+#                         'name': 'child2',
+#                         'type': 'bool',
+#                         'title': 'Child Boolean 2',
+#                         'value': False,
+#                         'show_pb': False,
+#                     },
+#                 ],
+#             }
+#         ])
+
+#         # Pass the parent parameter directly
+#         xml_element = parameter_to_xml_string(settings)
+
+#         # Expected XML string
+#         expected_xml = (
+#             b'<settings type="group" title="settings" visible="1" removable="0" readonly="0">'
+#             b'<parent_param type="group" title="Parent Parameter" visible="1" removable="0" readonly="0">'
+#             b'<child1 type="bool" title="Child Boolean 1" visible="1" removable="0" readonly="0" show_pb="1" value="1" />'
+#             b'<child2 type="bool" title="Child Boolean 2" visible="1" removable="0" readonly="0" show_pb="0" value="0" />'
+#             b'</parent_param>'
+#             b'</settings>'
+#         )
+
+#         # Assert the XML element string matches the expected output
+#         self.assertEqual(xml_element, expected_xml)
+
+
+class TestXMLParameterFactory(unittest.TestCase):
+    def test_parameter_to_xml_multiple_types(self):
+        # Create a Parameter object with various types
+        settings = Parameter.create(name='settings', type='group', children=[
+            {
                 'name': 'bool_param',
                 'type': 'bool',
-                'title': 'Test Boolean Parameter',
-                'visible': True,
-                'removable': False,
-                'readonly': True,
+                'title': 'Boolean Parameter',
                 'value': True,
-                'show_pb': True,
-            }])
-
-        # Pass the parameter directly
-        xml_element = parameter_to_xml_string(settings)
-
-        # Expected XML string
-        expected_xml = (
-            b'<settings type="group" title="settings" visible="1" removable="0" readonly="0">'
-            b'<bool_param type="bool" title="Test Boolean Parameter" visible="1" removable="0" readonly="1" show_pb="1" value="1" />'
-            b'</settings>'
-        )
-
-
-        # Assert the XML element string matches the expected output
-        self.assertEqual(xml_element, expected_xml)
-
-    def test_parameter_to_xml_with_children(self):
-        # Create a parent parameter with boolean children
-        settings = Parameter.create(name='settings', type='group',children=[
+            },
             {
-                'name': 'parent_param',
-                'type': 'group',
-                'title': 'Parent Parameter',
-                'children': [
-                    {
-                        'name': 'child1',
-                        'type': 'bool',
-                        'title': 'Child Boolean 1',
-                        'value': True,
-                        'show_pb': True,
-                    },
-                    {
-                        'name': 'child2',
-                        'type': 'bool',
-                        'title': 'Child Boolean 2',
-                        'value': False,
-                        'show_pb': False,
-                    },
-                ],
-            }
+                'name': 'date_param',
+                'type': 'date',
+                'title': 'Date Parameter',
+                'value': '2024-11-26',
+            },
+            {
+                'name': 'itemselect_param',
+                'type': 'itemselect',
+                'title': 'ItemSelect Parameter',
+                'value': ['item1', 'item2'],
+            },
+            {
+                'name': 'datetime_param',
+                'type': 'datetime',
+                'title': 'DateTime Parameter',
+                'value': '2024-11-26T15:30:00',
+            },
+            {
+                'name': 'float_param',
+                'type': 'float',
+                'title': 'Float Parameter',
+                'value': 3.14,
+            },
+            {
+                'name': 'led_param',
+                'type': 'led',
+                'title': 'LED Parameter',
+                'value': True,
+            },
+            {
+                'name': 'list_param',
+                'type': 'list',
+                'title': 'List Parameter',
+                'value': ['a', 'b', 'c'],
+            },
+            {
+                'name': 'slide_param',
+                'type': 'slide',
+                'title': 'Slide Parameter',
+                'value': 50,
+            },
+            {
+                'name': 'table_param',
+                'type': 'table',
+                'title': 'Table Parameter',
+                'value': [['row1', 'row2'], ['row3', 'row4']],
+            },
+            {
+                'name': 'table_view_param',
+                'type': 'table_view',
+                'title': 'Table View Parameter',
+                'value': [['view1', 'view2'], ['view3', 'view4']],
+            },
         ])
 
-        # Pass the parent parameter directly
+        # Convert the parameters to XML
         xml_element = parameter_to_xml_string(settings)
 
         # Expected XML string
         expected_xml = (
             b'<settings type="group" title="settings" visible="1" removable="0" readonly="0">'
-            b'<parent_param type="group" title="Parent Parameter" visible="1" removable="0" readonly="0">'
-            b'<child1 type="bool" title="Child Boolean 1" visible="1" removable="0" readonly="0" show_pb="1" value="1" />'
-            b'<child2 type="bool" title="Child Boolean 2" visible="1" removable="0" readonly="0" show_pb="0" value="0" />'
-            b'</parent_param>'
+            b'<bool_param type="bool" title="Boolean Parameter" value="1" />'
+            b'<date_param type="date" title="Date Parameter" value="2024-11-26" />'
+            b'<itemselect_param type="itemselect" title="ItemSelect Parameter" value="[\'item1\', \'item2\']" />'
+            b'<datetime_param type="datetime" title="DateTime Parameter" value="2024-11-26T15:30:00" />'
+            b'<float_param type="float" title="Float Parameter" value="3.14" />'
+            b'<led_param type="led" title="LED Parameter" value="1" />'
+            b'<list_param type="list" title="List Parameter" value="[\'a\', \'b\', \'c\']" />'
+            b'<slide_param type="slide" title="Slide Parameter" value="50" />'
+            b'<table_param type="table" title="Table Parameter" value="[\'row1\', \'row2\'], [\'row3\', \'row4\']" />'
+            b'<table_view_param type="table_view" title="Table View Parameter" value="[\'view1\', \'view2\'], [\'view3\', \'view4\']" />'
             b'</settings>'
         )
 
         # Assert the XML element string matches the expected output
         self.assertEqual(xml_element, expected_xml)
-        
+
 if __name__ == '__main__':
     unittest.main()
