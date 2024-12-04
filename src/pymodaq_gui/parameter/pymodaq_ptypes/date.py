@@ -1,8 +1,9 @@
 from qtpy import QtWidgets, QtCore
+from qtpy.QtCore import QDateTime, QTime
 from pyqtgraph import functions as fn
-from pyqtgraph.parametertree.parameterTypes.basetypes import WidgetParameterItem, SimpleParameter
-from pyqtgraph.parametertree import Parameter, ParameterItem
-from pymodaq_gui.parameter.xml_parameter_factory import XMLParameterFactory, XMLParameter
+from pyqtgraph.parametertree.parameterTypes.basetypes import WidgetParameterItem
+from pymodaq_gui.parameter import SimpleParameter, Parameter
+from pyqtgraph.parametertree import ParameterItem
 
 import numpy as np
 
@@ -109,6 +110,33 @@ class DateParameter(SimpleParameter):
 
     def _interpretValue(self, v):
         return QtCore.QDate(v)
+    
+    def set_specific_options(self, el, param_dict):
+        value = el.get('value','0')
+        param_dict['show_pb'] = True if el.get('show_pb', '0') == '1' else False
+        param_dict['value'] = QDateTime.fromMSecsSinceEpoch(int(value)).date()
+        
+    def get_type_options(self, param):
+        opts = {
+            "type": param.opts.get("type",None),
+            "title": param.opts.get("title", param.name())
+        }
+
+        boolean_opts = {
+            "visible": param.opts.get("visible", True),
+            "removable": param.opts.get("removable", False),
+            "readonly": param.opts.get("readonly", False),
+            "show_pb": param.opts.get("show_pb", False),
+            "value":    param.opts.get("value", False),
+        }
+        
+        opts.update({key: '1' if value else '0' for key, value in boolean_opts.items()})
+
+        for key in ["limits", "addList", "addText", "detlist", "movelist", "filetype"]:
+            if key in param.opts:
+                opts[key] = str(param.opts[key])
+
+        return opts
 
 
 class DateTimeParameter(SimpleParameter):
@@ -117,6 +145,33 @@ class DateTimeParameter(SimpleParameter):
     def _interpretValue(self, v):
         return QtCore.QDateTime(v)
 
+    def set_specific_options(self, el, param_dict):
+        value = el.get('value','0')
+        param_dict['show_pb'] = True if el.get('show_pb', '0') == '1' else False
+        param_dict['value'] = QDateTime.fromMSecsSinceEpoch(int(value))
+        
+    def get_type_options(self, param):
+        opts = {
+            "type": self.PARAMETER_TYPE,
+            "title": param.opts.get("title", param.name())
+        }
+
+        boolean_opts = {
+            "visible": param.opts.get("visible", True),
+            "removable": param.opts.get("removable", False),
+            "readonly": param.opts.get("readonly", False),
+            "show_pb": param.opts.get("show_pb", False),
+            "value":    param.opts.get("value", False),
+        }
+        
+        opts.update({key: '1' if value else '0' for key, value in boolean_opts.items()})
+
+        for key in ["limits", "addList", "addText", "detlist", "movelist", "filetype"]:
+            if key in param.opts:
+                opts[key] = str(param.opts[key])
+
+        return opts
+    
 
 class TimeParameter(SimpleParameter):
     itemClass = TimeParameterItem
@@ -128,65 +183,67 @@ class TimeParameter(SimpleParameter):
             return QtCore.QTime(*eval(v.split('QTime')[1]))
         
 
-@XMLParameterFactory.register_text_adder()
-class DateXMLParameter(XMLParameter):
+# @XMLParameterFactory.register_text_adder()
+# class DateXMLParameter(XMLParameter):
 
-    PARAMETER_TYPE = 'date'
+#     PARAMETER_TYPE = 'date'
 
-    def set_specific_options(self, el, param_dict):
-        param_dict['show_pb'] = True if el.get('show_pb', '0') == '1' else False
-        param_dict['value'] = True if el.text == '1' else False
+#     def set_specific_options(self, el, param_dict):
+#         value = el.text
+#         param_dict['show_pb'] = True if el.get('show_pb', '0') == '1' else False
+#         param_dict['value'] = el.get('value','') #QDateTime.fromMSecsSinceEpoch(int(value)).date()
         
-    def get_type_options(self, param):
-        opts = {
-            "type": self.PARAMETER_TYPE,
-            "title": param.opts.get("title", param.name())
-        }
+#     def get_type_options(self, param):
+#         opts = {
+#             "type": self.PARAMETER_TYPE,
+#             "title": param.opts.get("title", param.name())
+#         }
 
-        boolean_opts = {
-            "visible": param.opts.get("visible", True),
-            "removable": param.opts.get("removable", False),
-            "readonly": param.opts.get("readonly", False),
-            "show_pb": param.opts.get("show_pb", False),
-            "value":    param.opts.get("value", False),
-        }
+#         boolean_opts = {
+#             "visible": param.opts.get("visible", True),
+#             "removable": param.opts.get("removable", False),
+#             "readonly": param.opts.get("readonly", False),
+#             "show_pb": param.opts.get("show_pb", False),
+#             "value":    param.opts.get("value", False),
+#         }
         
-        opts.update({key: '1' if value else '0' for key, value in boolean_opts.items()})
+#         opts.update({key: '1' if value else '0' for key, value in boolean_opts.items()})
 
-        for key in ["limits", "addList", "addText", "detlist", "movelist", "filetype"]:
-            if key in param.opts:
-                opts[key] = str(param.opts[key])
+#         for key in ["limits", "addList", "addText", "detlist", "movelist", "filetype"]:
+#             if key in param.opts:
+#                 opts[key] = str(param.opts[key])
 
-        return opts
+#         return opts
 
 
-@XMLParameterFactory.register_text_adder()
-class DateTimeXMLParameter(XMLParameter):
+# @XMLParameterFactory.register_text_adder()
+# class DateTimeXMLParameter(XMLParameter):
 
-    PARAMETER_TYPE = 'datetime'
+#     PARAMETER_TYPE = 'datetime'
 
-    def set_specific_options(self, el, param_dict):
-        param_dict['show_pb'] = True if el.get('show_pb', '0') == '1' else False
-        param_dict['value'] = True if el.text == '1' else False
+#     def set_specific_options(self, el, param_dict):
+#         value = el.text
+#         param_dict['show_pb'] = True if el.get('show_pb', '0') == '1' else False
+#         param_dict['value'] = el.get('value','') #QDateTime.fromMSecsSinceEpoch(int(value))
         
-    def get_type_options(self, param):
-        opts = {
-            "type": self.PARAMETER_TYPE,
-            "title": param.opts.get("title", param.name())
-        }
+#     def get_type_options(self, param):
+#         opts = {
+#             "type": self.PARAMETER_TYPE,
+#             "title": param.opts.get("title", param.name())
+#         }
 
-        boolean_opts = {
-            "visible": param.opts.get("visible", True),
-            "removable": param.opts.get("removable", False),
-            "readonly": param.opts.get("readonly", False),
-            "show_pb": param.opts.get("show_pb", False),
-            "value":    param.opts.get("value", False),
-        }
+#         boolean_opts = {
+#             "visible": param.opts.get("visible", True),
+#             "removable": param.opts.get("removable", False),
+#             "readonly": param.opts.get("readonly", False),
+#             "show_pb": param.opts.get("show_pb", False),
+#             "value":    param.opts.get("value", False),
+#         }
         
-        opts.update({key: '1' if value else '0' for key, value in boolean_opts.items()})
+#         opts.update({key: '1' if value else '0' for key, value in boolean_opts.items()})
 
-        for key in ["limits", "addList", "addText", "detlist", "movelist", "filetype"]:
-            if key in param.opts:
-                opts[key] = str(param.opts[key])
+#         for key in ["limits", "addList", "addText", "detlist", "movelist", "filetype"]:
+#             if key in param.opts:
+#                 opts[key] = str(param.opts[key])
 
-        return opts
+#         return opts

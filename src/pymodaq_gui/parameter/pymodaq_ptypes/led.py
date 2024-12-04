@@ -1,7 +1,6 @@
-from pyqtgraph.parametertree.parameterTypes.basetypes import WidgetParameterItem, SimpleParameter
+from pyqtgraph.parametertree.parameterTypes.basetypes import WidgetParameterItem
 from pymodaq_gui.utils.widgets import QLED
-from pymodaq_gui.parameter.xml_parameter_factory import XMLParameterFactory, XMLParameter
-
+from pymodaq_gui.parameter import SimpleParameter
 
 class LedParameterItem(WidgetParameterItem):
     """Registered parameter type which displays a QLineEdit"""
@@ -37,22 +36,10 @@ class LedParameter(SimpleParameter):
     def _interpretValue(self, v):
         return bool(v)
 
-
-class LedPushParameter(SimpleParameter):
-    itemClass = LedPushParameterItem
-
-    def _interpretValue(self, v):
-        return bool(v)
-
-
-@XMLParameterFactory.register_text_adder()
-class LedXMLParameter(XMLParameter):
-
-    PARAMETER_TYPE = 'led'
-
     def set_specific_options(self, el, param_dict):
+        value = el.get('value','')
         param_dict['show_pb'] = True if el.get('show_pb', '0') == '1' else False
-        param_dict['value'] = True if el.text == '1' else False
+        param_dict['value'] = bool(int(value))
         
     def get_type_options(self, param):
         opts = {
@@ -75,3 +62,43 @@ class LedXMLParameter(XMLParameter):
                 opts[key] = str(param.opts[key])
 
         return opts
+
+class LedPushParameter(SimpleParameter):
+    itemClass = LedPushParameterItem
+
+    def _interpretValue(self, v):
+        return bool(v)
+
+   
+    
+# @XMLParameterFactory.register_text_adder()
+# class LedXMLParameter(XMLParameter):
+
+#     PARAMETER_TYPE = 'led'
+
+#     def set_specific_options(self, el, param_dict):
+#         value = el.text
+#         param_dict['show_pb'] = True if el.get('show_pb', '0') == '1' else False
+#         param_dict['value'] = el.get('value','') #bool(int(value))
+        
+#     def get_type_options(self, param):
+#         opts = {
+#             "type": self.PARAMETER_TYPE,
+#             "title": param.opts.get("title", param.name())
+#         }
+
+#         boolean_opts = {
+#             "visible": param.opts.get("visible", True),
+#             "removable": param.opts.get("removable", False),
+#             "readonly": param.opts.get("readonly", False),
+#             "show_pb": param.opts.get("show_pb", False),
+#             "value":    param.opts.get("value", False),
+#         }
+        
+#         opts.update({key: '1' if value else '0' for key, value in boolean_opts.items()})
+
+#         for key in ["limits", "addList", "addText", "detlist", "movelist", "filetype"]:
+#             if key in param.opts:
+#                 opts[key] = str(param.opts[key])
+
+#         return opts

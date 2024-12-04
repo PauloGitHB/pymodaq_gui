@@ -127,7 +127,7 @@ class ListParameterItem(ListParameterItem):
             self.widget.setEnabled(opts['enabled'])
 
 
-class ListParameter(ListParameter):
+class ListParameter(ListParameter, XMLParameter):
     """
         =============== =======================================
         **Attributes**    **Type**
@@ -148,18 +148,18 @@ class ListParameter(ListParameter):
         self.sigActivated.emit(self)
         self.emitStateChanged('activated', None)
 
-
-@XMLParameterFactory.register_text_adder()
-class ListXMLParameter(XMLParameter):
-
-    PARAMETER_TYPE = 'list'
-
     def set_specific_options(self, el, param_dict):
+        value = el.get('value',None)
         param_dict['show_pb'] = True if el.get('show_pb', '0') == '1' else False
-        param_dict['value'] = True if el.text == '1' else False
-        
+    
+        try:
+            param_dict['value'] = eval(value)
+        except Exception:
+            param_dict['value'] = value
+
     def get_type_options(self, param):
         opts = {
+            "name": param.opts.get("name", param.name()),
             "type": self.PARAMETER_TYPE,
             "title": param.opts.get("title", param.name())
         }
@@ -179,3 +179,40 @@ class ListXMLParameter(XMLParameter):
                 opts[key] = str(param.opts[key])
 
         return opts
+
+
+# @XMLParameterFactory.register_text_adder()
+# class ListXMLParameter(XMLParameter):
+
+#     PARAMETER_TYPE = 'list'
+
+#     def set_specific_options(self, el, param_dict):
+#         value = el.text
+#         param_dict['show_pb'] = True if el.get('show_pb', '0') == '1' else False
+#         param_dict['value'] = el.get('value','')
+#         # try:
+#         #     param_dict['value'] = eval(value)
+#         # except Exception:
+#         #     param_dict['value'] = value
+
+#     def get_type_options(self, param):
+#         opts = {
+#             "type": self.PARAMETER_TYPE,
+#             "title": param.opts.get("title", param.name())
+#         }
+
+#         boolean_opts = {
+#             "visible": param.opts.get("visible", True),
+#             "removable": param.opts.get("removable", False),
+#             "readonly": param.opts.get("readonly", False),
+#             "show_pb": param.opts.get("show_pb", False),
+#             "value":    param.opts.get("value", False),
+#         }
+        
+#         opts.update({key: '1' if value else '0' for key, value in boolean_opts.items()})
+
+#         for key in ["limits", "addList", "addText", "detlist", "movelist", "filetype"]:
+#             if key in param.opts:
+#                 opts[key] = str(param.opts[key])
+
+#         return opts

@@ -1,27 +1,12 @@
-from abc import ABCMeta, abstractmethod
-from typing import Callable
+from abc import abstractmethod
 from xml.etree import ElementTree as ET
-from pyqtgraph.parametertree.Parameter import PARAM_TYPES, PARAM_NAMES, Parameter
+from pyqtgraph.parametertree.Parameter import PARAM_TYPES
+from pyqtgraph.parametertree.Parameter import Parameter
 
-class XMLParameter(metaclass=ABCMeta):
 
-    @classmethod
-    @property
-    @abstractmethod
-    def PARAMETER_TYPE(cls):
-        raise NotImplementedError
-
+class XMLParameter():
     @staticmethod
-    def set_group_options(el:ET.Element):
-        group_options = {
-            "name": el.tag,
-            "type": el.get('type'),
-            "title": el.get('title', el.tag),
-        }
-        return group_options
-    
-    @staticmethod
-    def set_basic_options(el:ET.Element):
+    def set_basic_options(el: ET.Element):
         basic_options = {
             "name": el.tag,
             "type": el.get('type'),
@@ -30,100 +15,99 @@ class XMLParameter(metaclass=ABCMeta):
             "removable": el.get('removable', '0') == '1',
             "readonly": el.get('readonly', '0') == '1',
             "tip": el.get('tip', '0') == '1',
+            "show_pb": el.get('show_pb', '0') == '1'
+
         }
         return basic_options
-                
+     
+    @staticmethod
     @abstractmethod
-    def set_specific_options(self, el:ET.Element, param_dict:dict):
+    def set_specific_options(el:ET.Element, param_dict:dict):
         pass
 
     @staticmethod
     def xml_elt_to_dict(el: ET.Element):
         """Convert XML element to a dictionary."""
-        param_type = el.get('type')
-        param_instance = XMLParameterFactory.get_parameter_class(param_type)
-        if param_instance is not None:
-            dic = XMLParameter.set_basic_options(el)
+        param_type = el.get('type',None)
+        param_class = XMLParameterFactory.get_parameter_class(param_type)
+        dic = param_class.set_basic_options(el)
+        dic.update(param_class.set_specific_options(el))
         
-            param_instance.set_specific_options(el, dic)
-        else:
-            dic = XMLParameter.set_group_options(el)
         return dic
 
     @staticmethod
-    def get_group_options(param:Parameter):
-        opts = dict([])
-        param_type = str(param.type())
-        opts.update(dict(type=param_type))
+    def get_basics_options(param: 'Parameter'):
+        opts = {
+            "type": param.opts.get("type"),
+        }
+
         title = param.opts['title']
         if title is None:
             title = param.name()
+
         opts.update(dict(title=title))
 
         boolean_opts = {
-            "visible": param.opts.get("visible", True),
+            "visible": param.opts.get("visible", False),
             "removable": param.opts.get("removable", False),
             "readonly": param.opts.get("readonly", False),
+            "tip": param.opts.get("tip", False),
+            "show_pb": param.opts.get("show_pb", False),
         }
-
+        
         opts.update({key: '1' if value else '0' for key, value in boolean_opts.items()})
 
         for key in ["limits", "addList", "addText", "detlist", "movelist", "filetype"]:
             if key in param.opts:
                 opts[key] = str(param.opts[key])
 
-
         return opts
-
+    
+    @staticmethod
     @abstractmethod
-    def get_type_options(self,param:Parameter):
+    def get_specific_options(param: 'Parameter'):
         pass
 
     @staticmethod
-    def get_options(param:Parameter):
-        param_type = str(param.type())
-    
+    def get_options(param: 'Parameter'):
+        param_type = param.type()
         param_class = XMLParameterFactory.get_parameter_class(param_type)
-
-        if(param_class):
-            opts = param_class.get_type_options(param)
+        if(param_type == 'group'):
+            return param_class.get_basics_options(param)
         else:
-            opts = XMLParameter.get_group_options(param)
-            opts['type'] = param_type 
-        
-        return opts
-
-
-
+            dic = param_class.get_basics_options(param)
+            dic.update(param_class.get_specific_options(param))
+        return dic
 
 
 class XMLParameterFactory:
-
-    text_adders_registry = {}
-
-    @classmethod
-    def register_text_adder(cls) -> Callable:
-
-        def inner_wrapper(wrapped_class) -> Callable:
-
-            param_type = wrapped_class.PARAMETER_TYPE
-            cls.text_adders_registry[param_type] = wrapped_class
-            return wrapped_class
-
-        return inner_wrapper
+    
+    text_adders_registry = PARAM_TYPES
 
     @classmethod
     def get_parameter_class(cls, param_type: str):
-
-        if param_type not in cls.text_adders_registry:
-            if param_type == 'group':
-                return None
-            raise ValueError(f"{param_type} is not a supported parameter type.")
+        """
+        Retrieve the parameter class associated with a given parameter type.
+        Args:
+            param_type (str): The type of the parameter to retrieve.
+        Returns:
+            type: The class associated with the given parameter type.
+        Raises:
+            ValueError: If the provided parameter type is not supported.
+        """
         
-        return cls.text_adders_registry[param_type]()
+
+        normalized_type = param_type.lower()
+
+        for key, parameter_class in cls.text_adders_registry.items():
+            if key.lower() == normalized_type:
+                return parameter_class
+
+        raise ValueError(f"{param_type} is not a supported parameter type.")
+
     
     @staticmethod
-    def xml_string_to_parameter_factory(params=[], XML_elt=None):
+    def xml_string_to_parameter_list_factory(params=[], XML_elt=None):
         try:
             if type(XML_elt) is not ET.Element:
                 raise TypeError('not valid XML element')
@@ -134,7 +118,7 @@ class XMLParameterFactory:
                 param_dict['children'] = []
                 for child in XML_elt:
                     child_params = []
-                    children = XMLParameterFactory.xml_string_to_parameter_factory(child_params, child)
+                    children = XMLParameterFactory.xml_string_to_parameter_list_factory(child_params, child)
                     param_dict['children'].extend(children)
 
             params.append(param_dict)
@@ -161,10 +145,6 @@ class XMLParameterFactory:
         XML element : parent_elt
             XML element with subelements from Parameter object
 
-        See Also
-        --------
-        add_text_to_elt, walk_parameters_to_xml, dict_from_param
-
         """
         if type(param) is None:
             raise TypeError('No valid param input')
@@ -178,12 +158,34 @@ class XMLParameterFactory:
             opts = XMLParameter.get_options(param)
             elt = ET.Element(param.name(), **opts)
 
-            # if elt.text is None:
-            #     elt.text = '1'
-
             if param.hasChildren():
                 XMLParameterFactory.parameter_to_xml_string_factory(elt, param)
 
             parent_elt.append(elt)
 
         return parent_elt
+    
+    @classmethod
+    def parameter_list_to_parameter(params: list):
+        """
+        Convert a list of dict to a pyqtgraph parameter object.
+
+        =============== =========== ================================
+        **Parameters**   **Type**    **Description**
+
+        params           list        list of dict to init a parameter
+        =============== =========== ================================
+
+        Returns
+        -------
+        Parameter: a parameter object
+
+        """
+        if type(params) is not list:
+            raise TypeError('params must be a list of dict')
+
+        param = Parameter.create(name=params[0]['name'], type=params[0]['type'], title=params[0]['title'])
+        for child in params[0].get('children', []):
+            param.addChild(XMLParameterFactory.parameter_list_to_parameter(child))
+
+        return param

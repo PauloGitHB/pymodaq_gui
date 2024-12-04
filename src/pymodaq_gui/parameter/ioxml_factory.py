@@ -35,11 +35,7 @@ def dict_from_param(param):
     
     param_class = XMLParameterFactory.get_parameter_class(param_type)
 
-    if(param_class):
-        opts = param_class.get_options(param)
-    else:
-        opts = XMLParameter.get_group_options(param)
-        opts['type'] = param_type 
+    opts = param_class.get_options(param)
     
     return opts
 
@@ -153,6 +149,6 @@ def XML_string_to_parameter(xml_string):
     tree = ET.ElementTree(root)
 
     # tree.write('test.xml')
-    params = XMLParameterFactory.xml_string_to_parameter_factory(XML_elt=root,params=[])
+    params = XMLParameterFactory.xml_string_to_parameter_list_factory(params=[],XML_elt=root)
 
     return params
