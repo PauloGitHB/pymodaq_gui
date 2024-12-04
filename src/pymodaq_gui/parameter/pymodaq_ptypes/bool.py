@@ -7,7 +7,7 @@ class BoolParameter(Parameter):
     @staticmethod
     def set_specific_options(el):
         param_dict = {}
-        param_dict['value'] = True if el.text == '1' else False
+        param_dict['value'] = True if el.get('value') == '1' else False
 
         return param_dict
         
@@ -22,7 +22,7 @@ class BoolParameter(Parameter):
         """
 
         opts = {
-            "value": '1' if param.opts.get("value", False) else '0',
+            "value": '1' if param.opts.get('value') == True else '0',
         }
 
         return opts

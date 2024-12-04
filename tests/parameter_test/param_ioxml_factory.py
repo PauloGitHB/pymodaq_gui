@@ -10,18 +10,48 @@ from pymodaq_gui.parameter.ioxml import XML_string_to_parameter as xstp
 
 from pymodaq_gui.parameter import Parameter
 
+
+def print_parameter(param, indent=0):
+    """
+    Print a Parameter object with its options and children in a structured format.
+
+    Parameters
+    ----------
+    param : Parameter
+        The parameter to be printed.
+    indent : int
+        The indentation level for nested children (default is 0).
+    """
+    # Indentation pour un affichage hiérarchique
+    prefix = " " * (indent * 4)
+
+    # Afficher les détails du paramètre principal
+    print(f"{prefix}Parameter:")
+    print(f"{prefix}  Name: {param.name()}")
+    print(f"{prefix}  Type: {param.type()}")
+    print(f"{prefix}  Title: {param.opts.get('title', '')}")
+    print(f"{prefix}  Value: {param.value() if param.opts.get('type', '') != 'group' else 'N/A'}")
+    print(f"{prefix}  Options:")
+    for key, value in param.opts.items():
+        print(f"{prefix}    {key}: {value}")
+
+    # Si le paramètre a des enfants, les afficher récursivement
+    if param.hasChildren():
+        print(f"{prefix}  Children:")
+        for child in param.children():
+            print_parameter(child, indent=indent + 1)
+
+
 class TestBoolXMLParameter(unittest.TestCase):
     
-    def test_simple(self):
+    def test_start_with_element(self):
         el = ET.Element('parameter')
-        el.set('name', 'bool_param')
-        el.set('type', 'bool_push')
-        el.set('title', 'Test Boolean Parameter')
+        el.set('type', 'color')
+        el.set('title', 'Test Color Parameter')
         el.set('visible', '1')
         el.set('removable', '0')
         el.set('readonly', '1')
-        el.set('show_pb', '1')
-        el.text = '1'
+        el.set('value', '(255, 100, 50, 255)')
 
         param_dict = XML_string_to_parameter(ET.tostring(el))
 
@@ -30,8 +60,28 @@ class TestBoolXMLParameter(unittest.TestCase):
         elem_res = parameter_to_xml_string(param_res)
 
 
-        self.assertListEqual(elem_res,el)
+        self.assertEqual(elem_res, ET.tostring(el))
     
+    def test_start_with_parameter(self):
+        settings = Parameter.create(name='settings', type='group',children=[{
+                'name': 'bool_param',
+                'type': 'bool_push',
+                'title': 'Test Boolean Parameter',
+                'visible': True,
+                'removable': False,
+                'readonly': True,
+                'value': True,
+                'show_pb': True,
+            }])
+
+        xml_element = parameter_to_xml_string(settings)
+
+        param_dict = XML_string_to_parameter(xml_element)
+
+        param_res = XMLParameterFactory.parameter_list_to_parameter(param_dict)
+
+        self.assertEqual(settings, param_res)
+
     # def test_xml_with_children_to_param(self):
     #     # Create a parent XML element
     #     parent = ET.Element('paramater')

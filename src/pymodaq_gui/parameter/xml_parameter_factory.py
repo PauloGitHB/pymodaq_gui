@@ -22,7 +22,7 @@ class XMLParameter():
      
     @staticmethod
     @abstractmethod
-    def set_specific_options(el:ET.Element, param_dict:dict):
+    def set_specific_options(el:ET.Element):
         pass
 
     @staticmethod
@@ -30,6 +30,8 @@ class XMLParameter():
         """Convert XML element to a dictionary."""
         param_type = el.get('type',None)
         param_class = XMLParameterFactory.get_parameter_class(param_type)
+        if(param_type == 'group'):
+            return param_class.set_basic_options(el)
         dic = param_class.set_basic_options(el)
         dic.update(param_class.set_specific_options(el))
         
@@ -165,7 +167,7 @@ class XMLParameterFactory:
 
         return parent_elt
     
-    @classmethod
+    @staticmethod
     def parameter_list_to_parameter(params: list):
         """
         Convert a list of dict to a pyqtgraph parameter object.
@@ -182,10 +184,16 @@ class XMLParameterFactory:
 
         """
         if type(params) is not list:
-            raise TypeError('params must be a list of dict')
+            raise TypeError('params must be a list of dict') 
+        
+        
+        param_opts = params[0]
+        children = param_opts.pop('children', [])
 
-        param = Parameter.create(name=params[0]['name'], type=params[0]['type'], title=params[0]['title'])
-        for child in params[0].get('children', []):
-            param.addChild(XMLParameterFactory.parameter_list_to_parameter(child))
+        param = Parameter.create(**param_opts)
+
+        for child_dict in children:
+            child_param = XMLParameterFactory.parameter_list_to_parameter([child_dict])
+            param.addChild(child_param)
 
         return param

@@ -12,6 +12,7 @@ from .text import PlainTextPbParameter
 from .numeric import NumericParameter
 from .group import GroupParameter
 from .bool import BoolParameter
+from .color import ColorParameter
 
 from pyqtgraph.parametertree.Parameter import registerParameterType, registerParameterItemType, Parameter
 
@@ -22,6 +23,7 @@ registerParameterType('pixmap', PixmapParameter, override=True)
 registerParameterType('pixmap_check', PixmapCheckParameter, override=True)
 registerParameterType('group', GroupParameter, override=True)
 registerParameterType('bool',BoolParameter,override=True)
+registerParameterType('color', ColorParameter, override=True)
 
 registerParameterType('slide', SliderParameter, override=True)
 
