@@ -18,36 +18,31 @@ class NumericParameter(SimpleParameter):
         super().setLimits(limits)
         return limits
     
-    def set_specific_options(self, el, param_dict):
+    @staticmethod
+    def set_specific_options(el):
         value = el.get('value','0')
+        param_dict = {}
         param_type = param_dict['type']
-
-        param_dict['show_pb'] = True if el.get('show_pb', '0') == '1' else False
 
         if param_type == "int":
             param_dict['value'] = float(value)
         elif param_type == "float":
             param_dict['value'] = int(float(value))
-        
-    def get_type_options(self, param):
+
+        return param_dict
+
+    @staticmethod 
+    def get_specific_options(param):
+        param_value = param.opts.get('value', None)
+
+        if param.opts['type'] == "int":
+            value = 'int({})'.format(param_value)
+        else:
+            value = 'float({})'.format(param.value())
+
         opts = {
-            "type": self.PARAMETER_TYPE,
-            "title": param.opts.get("title", param.name())
+            "value": value,
         }
-
-        boolean_opts = {
-            "visible": param.opts.get("visible", True),
-            "removable": param.opts.get("removable", False),
-            "readonly": param.opts.get("readonly", False),
-            "show_pb": param.opts.get("show_pb", False),
-            "value":    param.opts.get("value", False),
-        }
-        
-        opts.update({key: '1' if value else '0' for key, value in boolean_opts.items()})
-
-        for key in ["limits", "addList", "addText", "detlist", "movelist", "filetype"]:
-            if key in param.opts:
-                opts[key] = str(param.opts[key])
 
         return opts
 

@@ -150,8 +150,9 @@ class TableViewParameter(Parameter):
         self.opts['value'] = value
         self.sigValueChanged.emit(self, value)
 
-
-    def set_specific_options(self, el, param_dict):
+    @staticmethod
+    def set_specific_options(el):
+        param_dict = {}
         value = el.get('value','')
         param_dict['show_pb'] = True if el.get('show_pb', '0') == '1' else False
         
@@ -159,27 +160,25 @@ class TableViewParameter(Parameter):
         mod = importlib.import_module(data_dict['module'])
         _cls = getattr(mod, data_dict['classname'])
         param_dict['value'] = _cls(data_dict['data'], header=data_dict['header'])
+
+        return param_dict
         
-    def get_type_options(self, param):
+    @staticmethod
+    def get_specific_options(param):
+        param_value = param.opts.get('value', None)
+        try:
+            data = dict(classname=param_value.__class__.__name__,
+                        module=param_value.__class__.__module__,
+                        data=param_value.get_data_all(),
+                        header=param_value.header)
+            value = json.dumps(data)
+        except Exception:
+            value = ''
+
         opts = {
-            "type": self.PARAMETER_TYPE,
-            "title": param.opts.get("title", param.name())
+            "value": value,
         }
-
-        boolean_opts = {
-            "visible": param.opts.get("visible", True),
-            "removable": param.opts.get("removable", False),
-            "readonly": param.opts.get("readonly", False),
-            "show_pb": param.opts.get("show_pb", False),
-            "value":    param.opts.get("value", False),
-        }
-        
-        opts.update({key: '1' if value else '0' for key, value in boolean_opts.items()})
-
-        for key in ["limits", "addList", "addText", "detlist", "movelist", "filetype"]:
-            if key in param.opts:
-                opts[key] = str(param.opts[key])
-
+    
         return opts
 
 # @XMLParameterFactory.register_text_adder()

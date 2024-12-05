@@ -148,35 +148,33 @@ class ListParameter(ListParameter, XMLParameter):
         self.sigActivated.emit(self)
         self.emitStateChanged('activated', None)
 
-    def set_specific_options(self, el, param_dict):
-        value = el.get('value',None)
-        param_dict['show_pb'] = True if el.get('show_pb', '0') == '1' else False
-    
+    @staticmethod
+    def set_specific_options(el):
+        param_dict = {}
+        value = el.get('value',None)    
         try:
             param_dict['value'] = eval(value)
         except Exception:
             param_dict['value'] = value
 
-    def get_type_options(self, param):
-        opts = {
-            "name": param.opts.get("name", param.name()),
-            "type": self.PARAMETER_TYPE,
-            "title": param.opts.get("title", param.name())
-        }
+        return param_dict
 
-        boolean_opts = {
-            "visible": param.opts.get("visible", True),
-            "removable": param.opts.get("removable", False),
-            "readonly": param.opts.get("readonly", False),
-            "show_pb": param.opts.get("show_pb", False),
-            "value":    param.opts.get("value", False),
-        }
+    @staticmethod
+    def get_specific_options(param):
+        param_value = param.opts.get('value', None)
+
+        if isinstance(param_value, str):
+            value = "str('{}')".format(param_value)
+        elif isinstance(param_value, int):
+            value = 'int({})'.format(param_value)
+        elif isinstance(param_value, float):
+            value = 'float({})'.format(param_value)
+        else:
+            value = str(param_value)
         
-        opts.update({key: '1' if value else '0' for key, value in boolean_opts.items()})
-
-        for key in ["limits", "addList", "addText", "detlist", "movelist", "filetype"]:
-            if key in param.opts:
-                opts[key] = str(param.opts[key])
+        opts = {
+            "value": value,
+        }
 
         return opts
 

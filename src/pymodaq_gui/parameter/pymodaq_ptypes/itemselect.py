@@ -268,35 +268,30 @@ class ItemSelectParameter(Parameter):
         self.sigActivated.emit(self)
         self.emitStateChanged('activated', None)
 
-
-    def set_specific_options(self, el, param_dict):
+    @staticmethod
+    def set_specific_options(el):
+        param_dict = {}
         value = el.get('value','')
-        param_dict['show_pb'] = True if el.get('show_pb', '0') == '1' else False
-       
+
         if value == 'None':
             param_dict['value'] = dict(all_items=[], selected=[])
         else:
             param_dict['value'] = dict(all_items=eval(el.get('all_items', value)), selected=eval(value))
+
+        return param_dict
         
-    def get_type_options(self, param):
+    @staticmethod
+    def get_specific_options(param):
+        param_value = param.opts.get('value', None)
+        if param_value is not None:
+            all_items = str(param_value['all_items'])
+            value = str(param_value['selected'])
+        else:
+            value = str(None)
         opts = {
-            "type": self.PARAMETER_TYPE,
-            "title": param.opts.get("title", param.name())
+            'all_items': all_items,
+            "value": value,
         }
-
-        boolean_opts = {
-            "visible": param.opts.get("visible", True),
-            "removable": param.opts.get("removable", False),
-            "readonly": param.opts.get("readonly", False),
-            "show_pb": param.opts.get("show_pb", False),
-            "value":    param.opts.get("value", False),
-        }
-        
-        opts.update({key: '1' if value else '0' for key, value in boolean_opts.items()})
-
-        for key in ["limits", "addList", "addText", "detlist", "movelist", "filetype"]:
-            if key in param.opts:
-                opts[key] = str(param.opts[key])
 
         return opts
 

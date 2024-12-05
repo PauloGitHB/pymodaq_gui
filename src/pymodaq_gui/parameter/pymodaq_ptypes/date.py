@@ -150,8 +150,6 @@ class DateTimeParameter(SimpleParameter):
             "value": str(param_value.toMSecsSinceEpoch()),
         }
         
-       
-
         return opts
     
 
