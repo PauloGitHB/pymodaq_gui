@@ -7,7 +7,8 @@ class ColorParameter(ColorParameter, XMLParameter):
     @staticmethod
     def set_specific_options(el):
         param_dict = {}
-        param_dict['value'] = QtGui.QColor(*eval(el.get('value')))
+        value = el.get('value','0')
+        param_dict['value'] = QtGui.QColor(*eval(value))
 
         return param_dict
         

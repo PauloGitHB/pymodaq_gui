@@ -111,30 +111,20 @@ class DateParameter(SimpleParameter):
     def _interpretValue(self, v):
         return QtCore.QDate(v)
     
-    def set_specific_options(self, el, param_dict):
+    @staticmethod
+    def set_specific_options(el):
+        param_dict = {}
         value = el.get('value','0')
-        param_dict['show_pb'] = True if el.get('show_pb', '0') == '1' else False
         param_dict['value'] = QDateTime.fromMSecsSinceEpoch(int(value)).date()
+
+        return param_dict
         
-    def get_type_options(self, param):
+    @staticmethod
+    def get_specific_options(param):
+        param_value = param.opts.get('value', None)
         opts = {
-            "type": param.opts.get("type",None),
-            "title": param.opts.get("title", param.name())
+            "value": str(QDateTime(param_value, QTime()).toMSecsSinceEpoch())
         }
-
-        boolean_opts = {
-            "visible": param.opts.get("visible", True),
-            "removable": param.opts.get("removable", False),
-            "readonly": param.opts.get("readonly", False),
-            "show_pb": param.opts.get("show_pb", False),
-            "value":    param.opts.get("value", False),
-        }
-        
-        opts.update({key: '1' if value else '0' for key, value in boolean_opts.items()})
-
-        for key in ["limits", "addList", "addText", "detlist", "movelist", "filetype"]:
-            if key in param.opts:
-                opts[key] = str(param.opts[key])
 
         return opts
 
@@ -145,30 +135,22 @@ class DateTimeParameter(SimpleParameter):
     def _interpretValue(self, v):
         return QtCore.QDateTime(v)
 
-    def set_specific_options(self, el, param_dict):
+    @staticmethod
+    def set_specific_options(el):
+        param_dict = {}
         value = el.get('value','0')
-        param_dict['show_pb'] = True if el.get('show_pb', '0') == '1' else False
         param_dict['value'] = QDateTime.fromMSecsSinceEpoch(int(value))
-        
-    def get_type_options(self, param):
+
+        return param_dict
+
+    @staticmethod   
+    def get_specific_options(param):
+        param_value = param.opts.get('value', None)
         opts = {
-            "type": self.PARAMETER_TYPE,
-            "title": param.opts.get("title", param.name())
-        }
-
-        boolean_opts = {
-            "visible": param.opts.get("visible", True),
-            "removable": param.opts.get("removable", False),
-            "readonly": param.opts.get("readonly", False),
-            "show_pb": param.opts.get("show_pb", False),
-            "value":    param.opts.get("value", False),
+            "value": str(param_value.toMSecsSinceEpoch()),
         }
         
-        opts.update({key: '1' if value else '0' for key, value in boolean_opts.items()})
-
-        for key in ["limits", "addList", "addText", "detlist", "movelist", "filetype"]:
-            if key in param.opts:
-                opts[key] = str(param.opts[key])
+       
 
         return opts
     
